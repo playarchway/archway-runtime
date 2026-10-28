@@ -1,0 +1,13 @@
+# Weekly updates for the actions in the workflows. The pinned downloads in scripts/fetch-wine-tools.sh (llvm-mingw,
+# FreeType, Wine Mono) are raised by hand when Wine moves to a new release.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci

@@ -18,23 +18,29 @@ bison="${BISON_DIR:-$tools/host-deps/bison/3.8.2}"
 
 export PATH="$bison/bin:$tools/llvm-mingw-20261020-ucrt-macos-universal/bin:$PATH"
 export BISON_PKGDATADIR="$bison/share/bison"
+# With ccache installed, the Mac and the Windows compilers go through it, so a rebuild with few changes is quick.
+# The llvm-mingw compilers are named here rather than through --with-mingw=llvm-mingw, which would drop ccache.
+ccache=""
+command -v ccache >/dev/null && ccache="ccache "
 
 echo "Building Wine from $wine_source ($(git -C "$wine_source" log -1 --format='%h %s'))"
 if [ ! -f "$build/Makefile" ]; then
     mkdir -p "$build"
     (cd "$build" && "$wine_source/configure" --build=x86_64-apple-darwin --enable-archs=i386,x86_64 \
-        --with-mingw=llvm-mingw --disable-tests --with-coreaudio --with-freetype \
+        --with-mingw --disable-tests --with-coreaudio --with-freetype \
         --without-alsa --without-capi --without-cups --without-dbus --without-ffmpeg --without-fontconfig \
         --without-gettext --without-gettextpo --without-gphoto --without-gnutls --without-gssapi \
         --without-gstreamer --without-krb5 --without-netapi --without-opencl --without-oss --without-pcap \
         --without-pcsclite --without-pulse --without-sane --without-sdl --without-udev --without-usb \
         --without-v4l2 --without-va --without-vulkan --without-wayland --without-x \
-        CC="/usr/bin/clang -arch x86_64" CFLAGS="-O2 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0" \
+        CC="${ccache}/usr/bin/clang -arch x86_64" CFLAGS="-O2 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0" \
+        x86_64_CC="${ccache}x86_64-w64-mingw32-clang" i386_CC="${ccache}i686-w64-mingw32-clang" \
         CROSSCFLAGS="-O2" \
         FREETYPE_CFLAGS="-I$freetype/include/freetype2" FREETYPE_LIBS="-L$freetype/lib -lfreetype" \
         >/dev/null)
 fi
 make -C "$build" -j"$(sysctl -n hw.ncpu)" >/dev/null
+[ -z "$ccache" ] || ccache --show-stats
 rm -rf "$destdir"
 make -C "$build" install DESTDIR="$destdir" >/dev/null
 echo "Wine installed: $destdir/usr/local"

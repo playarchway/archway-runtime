@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ vars.LINUX_RUNNER || 'ubuntu-latest' }}
     steps:
       - id: bot
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ vars.ARCHWAY_BOT_APP_ID }}
           private-key: ${{ secrets.ARCHWAY_BOT_PRIVATE_KEY }}

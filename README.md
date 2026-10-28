@@ -12,7 +12,7 @@ Each [release](https://github.com/playarchway/archway-runtime/releases) carries 
 ## A new runtime
 
 1. Change `wine.ref` to the full commit ID in archway-wine and push it to `main`. The Runtime workflow (`.github/workflows/runtime.yml`, on a macOS runner, about 20 to 45 minutes) builds the package and publishes the release. It stops early if a release for that commit already exists.
-2. In Archway, point `runtime.json` at the new release: its URL, SHA-256, and size in bytes.
+2. The workflow then opens a pull request in Archway that points `runtime.json` at the new release, with its URL, SHA-256, and size (`.github/workflows/propose.yml`; it also runs by hand for an existing release). Test Steam and a game with the runtime, then merge it; the next app release ships it.
 
 The workflow needs Archway Bot (organization variable `ARCHWAY_BOT_APP_ID`, secret `ARCHWAY_BOT_PRIVATE_KEY`). It reads Apple's Game Porting Toolkit from the private repository `playarchway/archway-build-inputs` and uses the `archway` command line tool from `playarchway/archway` to stage D3DMetal the way the app expects.
 

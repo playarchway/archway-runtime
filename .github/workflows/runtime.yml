@@ -1,7 +1,8 @@
 name: Runtime
 
 # Builds Archway's Wine runtime (Wine, FreeType, Wine Mono, D3DMetal) from the playarchway/archway-wine commit in
-# wine.ref and publishes it as a release that the app downloads. Runs when wine.ref changes on main, or by hand.
+# wine.ref, publishes it as a release, and proposes it to Archway (propose.yml). Runs when wine.ref changes on
+# main, or by hand.
 # Archway Bot (organization variable ARCHWAY_BOT_APP_ID, secret ARCHWAY_BOT_PRIVATE_KEY) reads Apple's GPTK from
 # the private playarchway/archway-build-inputs (release gptk-4.0-beta-3) and checks out playarchway/archway, whose
 # stage-d3dmetal command lays out D3DMetal the way the app expects.
@@ -26,6 +27,8 @@ jobs:
   build:
     runs-on: ${{ vars.MACOS_RUNNER || 'macos-26' }}
     timeout-minutes: 240
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - id: bot
@@ -103,3 +106,10 @@ jobs:
           gh release create "$VERSION" dist/* --target "$GITHUB_SHA" \
             --title "Archway Wine $VERSION" \
             --notes "Wine runtime for Archway, built from playarchway/archway-wine at $COMMIT, with FreeType 2.15.0, Wine Mono 11.3.0, and Apple's D3DMetal (GPTK 4.0 beta 3, non-commercial redistribution under Apple's license). Archway downloads it on first start; to use it by hand, unpack it into DATA/runtime-overlays/NAME/."
+
+  propose:
+    needs: build
+    uses: ./.github/workflows/propose.yml
+    with:
+      version: ${{ needs.build.outputs.version }}
+    secrets: inherit

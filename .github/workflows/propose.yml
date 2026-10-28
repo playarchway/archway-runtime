@@ -1,0 +1,66 @@
+name: Propose to Archway
+
+# Opens a pull request in playarchway/archway that points runtime.json at a released runtime: its URL, SHA-256, and
+# size. Merging it puts the runtime into the next app release. The Runtime workflow calls this after publishing;
+# it also runs by hand for an existing release. Uses Archway Bot (ARCHWAY_BOT_APP_ID, ARCHWAY_BOT_PRIVATE_KEY).
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Runtime release, for example 11.20-e51c772
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  propose:
+    runs-on: ${{ vars.LINUX_RUNNER || 'ubuntu-latest' }}
+    steps:
+      - id: bot
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.ARCHWAY_BOT_APP_ID }}
+          private-key: ${{ secrets.ARCHWAY_BOT_PRIVATE_KEY }}
+          repositories: archway
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Open the pull request
+        env:
+          VERSION: ${{ inputs.version }}
+          RELEASE_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
+        run: |
+          archway=playarchway/archway
+          path=Sources/ArchwayCore/Resources/runtime.json
+          branch="runtime/$VERSION"
+          asset="archway-wine-$VERSION.tar.xz"
+
+          sha256="$(GH_TOKEN="$RELEASE_TOKEN" gh release download "$VERSION" -R "$GITHUB_REPOSITORY" --pattern "$asset.sha256" --output - | cut -d' ' -f1)"
+          size="$(GH_TOKEN="$RELEASE_TOKEN" gh release view "$VERSION" -R "$GITHUB_REPOSITORY" --json assets --jq ".assets[] | select(.name == \"$asset\") | .size")"
+          [[ "$sha256" =~ ^[0-9a-f]{64}$ && "$size" =~ ^[0-9]+$ ]] || { echo "Release $VERSION has no $asset with its .sha256" >&2; exit 1; }
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$VERSION/$asset"
+          json="$(jq -n --arg version "$VERSION" --arg url "$url" --arg sha256 "$sha256" --argjson size "$size" \
+            '{version: $version, url: $url, sha256: $sha256, size: $size}')"
+
+          if gh api "repos/$archway/contents/$path" --jq .content | base64 -d | jq -e --arg url "$url" '.url == $url' >/dev/null; then
+            echo "Archway already uses $VERSION."
+            exit 0
+          fi
+          main="$(gh api "repos/$archway/git/ref/heads/main" --jq .object.sha)"
+          gh api "repos/$archway/git/refs" -f ref="refs/heads/$branch" -f sha="$main" >/dev/null
+          file="$(gh api "repos/$archway/contents/$path?ref=$branch" --jq .sha)"
+          gh api -X PUT "repos/$archway/contents/$path" -f branch="$branch" -f sha="$file" \
+            -f message="feat(runtime): use the Wine runtime $VERSION" \
+            -f content="$(printf '%s\n' "$json" | base64 | tr -d '\n')" >/dev/null
+          gh pr create -R "$archway" --base main --head "$branch" \
+            --title "feat(runtime): use the Wine runtime $VERSION" \
+            --body "Points \`runtime.json\` at [$VERSION](https://github.com/$GITHUB_REPOSITORY/releases/tag/$VERSION), built from playarchway/archway-wine at $(GH_TOKEN="$RELEASE_TOKEN" gh release view "$VERSION" -R "$GITHUB_REPOSITORY" --json body --jq '.body' | grep -oE '[0-9a-f]{40}' | head -1).
+
+          Before merging, test Steam and a game with this runtime. Merging puts it into the next app release; Archway then downloads it and removes the old one."

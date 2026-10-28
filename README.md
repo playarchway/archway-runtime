@@ -7,7 +7,7 @@ The Wine runtime that [Archway](https://github.com/playarchway/archway) download
 - Wine Mono 11.3.0, shared, so new bottles skip the Mono download dialog
 - Apple's D3DMetal from the Game Porting Toolkit 4.0 beta 3, unmodified and staged into `Wine/lib`
 
-Runtimes up to `11.20-e51c772` were released in [playarchway/archway](https://github.com/playarchway/archway/releases); later ones are released here. Each [release](https://github.com/playarchway/archway-runtime/releases) carries `archway-wine-VERSION.tar.xz` and its SHA-256. `VERSION` is Wine's version and the short commit, for example `11.20-e51c772`. The archive holds `Wine/` and `WhiskyWineVersion.plist`. Archway unpacks it into `DATA/runtime-overlays/archway-wine-VERSION/`; each app release names the runtime it uses in `Sources/ArchwayCore/Resources/runtime.json`.
+Each [release](https://github.com/playarchway/archway-runtime/releases) carries `archway-wine-VERSION.tar.xz` and its SHA-256. `VERSION` is Wine's version and the short commit, for example `11.20-e51c772`. The archive holds `Wine/` and `WhiskyWineVersion.plist`. Archway unpacks it into `DATA/runtime-overlays/archway-wine-VERSION/`; each app release names the runtime it uses in `Sources/ArchwayCore/Resources/runtime.json`.
 
 ## A new runtime
 

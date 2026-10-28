@@ -74,7 +74,7 @@ mkdir -p "$notices"
 cp "$wine_source/COPYING.LIB" "$wine_source/LICENSE" "$wine_source/AUTHORS" "$notices/"
 cp "$(dirname "$freetype")/../share/doc/freetype2/LICENSE.TXT" "$notices/FreeType-LICENSE.TXT" 2>/dev/null ||
     cp "$(dirname "$freetype")/../../LICENSE.TXT" "$notices/FreeType-LICENSE.TXT"
-cp "$tools/wine-mono-11.3.0-COPYING" "$notices/WineMono-COPYING"
+cp "$mono-COPYING" "$notices/WineMono-COPYING"
 cat > "$notices/SOURCE" <<EOF
 Archway Wine $version
 Wine source: $(git -C "$wine_source" remote get-url origin | sed 's|^git@github.com:|https://github.com/|') at $(git -C "$wine_source" rev-parse HEAD)

@@ -16,6 +16,9 @@ freetype_sha256="93cd47eb719c325107f2d3cf087d06299e944c3b48a40b55537302304dea1dd
 mono="wine-mono-11.3.0"
 mono_url="https://github.com/wine-mono/wine-mono/releases/download/$mono/$mono-x86.tar.xz"
 mono_sha256="54a1b0111c3fe4b785eae688af94d27e64995707ad648b6fee8000381b80d298"
+# The binary package has no license file; COPYING from the same tag lists the licenses of its parts.
+mono_copying_url="https://raw.githubusercontent.com/wine-mono/wine-mono/$mono/COPYING"
+mono_copying_sha256="0265443ffc97c9450dbcf402c2430bf9fe87d7a6c92d5d7684fcecfe749bf75d"
 
 mkdir -p "$tools"
 cd "$tools"
@@ -45,4 +48,5 @@ fi
 
 fetch "$mono_url" "$mono_sha256" "$mono-x86.tar.xz"
 [ -d "$mono" ] || tar -xf "$mono-x86.tar.xz"
+fetch "$mono_copying_url" "$mono_copying_sha256" "$mono-COPYING"
 echo "Wine tools ready: $tools"

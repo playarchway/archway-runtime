@@ -31,5 +31,5 @@ WINE_TOOLS=TOOLS scripts/package-runtime.sh INSTALL/usr/local Evaluation_environ
 The scripts are under the GPL-3.0, like Archway; see [LICENSE](LICENSE). The packages contain software under its own licenses:
 
 - **Wine** is LGPL. The archive names the exact archway-wine commit it was built from, and Wine's license files are in `Wine/share/doc/archway-wine`.
-- **FreeType**'s license is in the same folder.
+- **FreeType**'s license and **Wine Mono**'s list of licenses (`WineMono-COPYING`) are in the same folder.
 - **D3DMetal** is Apple's, redistributed unmodified and non-commercially under the Game Porting Toolkit license; that license ships in `Wine/lib/external/GPTK-License.rtf`.

@@ -23,7 +23,8 @@ freetype="$tools/freetype-2.15.0/install/lib/libfreetype.6.dylib"
 mono="$tools/wine-mono-11.3.0"
 
 [ -x "$wine_install/bin/wine" ] || { echo "No Wine install in $wine_install" >&2; exit 1; }
-[ -f "$freetype" ] && [ -d "$mono" ] || { echo "No FreeType or Wine Mono in $tools; run scripts/fetch-wine-tools.sh" >&2; exit 1; }
+[ -f "$freetype" ] && [ -d "$mono" ] && [ -f "$mono-COPYING" ] ||
+    { echo "No FreeType or Wine Mono in $tools; run scripts/fetch-wine-tools.sh" >&2; exit 1; }
 
 # Archway checks that staging happens inside its data directory, so resolve /var to /private/var.
 staging="$(cd "$(mktemp -d)" && pwd -P)"
@@ -73,6 +74,7 @@ mkdir -p "$notices"
 cp "$wine_source/COPYING.LIB" "$wine_source/LICENSE" "$wine_source/AUTHORS" "$notices/"
 cp "$(dirname "$freetype")/../share/doc/freetype2/LICENSE.TXT" "$notices/FreeType-LICENSE.TXT" 2>/dev/null ||
     cp "$(dirname "$freetype")/../../LICENSE.TXT" "$notices/FreeType-LICENSE.TXT"
+cp "$tools/wine-mono-11.3.0-COPYING" "$notices/WineMono-COPYING"
 cat > "$notices/SOURCE" <<EOF
 Archway Wine $version
 Wine source: $(git -C "$wine_source" remote get-url origin | sed 's|^git@github.com:|https://github.com/|') at $(git -C "$wine_source" rev-parse HEAD)

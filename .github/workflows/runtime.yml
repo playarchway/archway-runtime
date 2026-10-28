@@ -30,9 +30,9 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: bot
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ vars.ARCHWAY_BOT_APP_ID }}
           private-key: ${{ secrets.ARCHWAY_BOT_PRIVATE_KEY }}
@@ -44,7 +44,7 @@ jobs:
           ref="$(tr -d '[:space:]' < wine.ref)"
           [[ "$ref" =~ ^[0-9a-f]{40}$ ]] || { echo "wine.ref must hold a full 40-character commit ID" >&2; exit 1; }
           echo "commit=$ref" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: playarchway/archway-wine
           ref: ${{ steps.ref.outputs.commit }}
@@ -61,7 +61,7 @@ jobs:
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: playarchway/archway
           token: ${{ steps.bot.outputs.token }}
@@ -71,7 +71,7 @@ jobs:
         run: |
           sudo softwareupdate --install-rosetta --agree-to-license
           brew install bison ccache
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/tools
           key: wine-tools-${{ hashFiles('scripts/fetch-wine-tools.sh') }}
@@ -84,7 +84,7 @@ jobs:
           gh release download gptk-4.0-beta-3 --repo playarchway/archway-build-inputs --pattern "$GPTK_DMG" --dir "$RUNNER_TEMP"
           echo "$GPTK_SHA256  $RUNNER_TEMP/$GPTK_DMG" | shasum -a 256 -c -
       # Compiled objects from earlier builds; the newest cache is the fallback when this Wine commit has none.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/ccache
           key: ccache-${{ steps.ref.outputs.commit }}
